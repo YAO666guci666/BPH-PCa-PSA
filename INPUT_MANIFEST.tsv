@@ -1,0 +1,21 @@
+Category	File_or_directory	Location	Description
+Raw_GWAS	finngen_BPH.gz	main_analysis/rawdata/	FinnGen R10 BPH
+Raw_GWAS	ieu-b-4809.vcf.gz	main_analysis/rawdata/	IEU PCa
+Raw_GWAS	GCST90476277_PSA.txt.gz	main_analysis/rawdata/	Binary elevated PSA
+Raw_GWAS	GCST90476319.tsv.gz	sensitivity_continuous_psa/rawdata/	Continuous PSA
+Reference	QTLEnrich, GeneEnrich, magma, and related resources	main_analysis/reference/	Place resources at the relative paths used by the main scripts; configure the same resources for the sensitivity analysis
+LD_reference	g1000_eur	main_analysis/reference/magma/g1000/	eCAVIAR, fastENLOC, and COJO
+COJO_input	<trait>.txt.rehabed.tsv	main_analysis/rawdata/sumstats_rehab/result/	Read only when the GWAS output from step 02 lacks the eaf column
+LD_reference	1kg.v3/EUR	main_analysis/22_hyprcoloc/	HyPrColoc
+LD_reference	UKB_imputed_SVD_eigen99_extraction	main_analysis/30_hdl/	Genome-wide HDL; also required for the sensitivity analysis
+LD_reference	UKB_REF and UKB_PPP	main_analysis/30_hdl/	Local HDL; also required for the sensitivity analysis
+gsMap_input	E16.5_E1S1.MOSTA.h5ad	main_analysis/27_prepare_gsmap/ST/	Spatial transcriptomics input for gsMap
+LAVA_input	BPH37.txt, PC37.txt, and PSA37.txt	main_analysis/33_lava/input/	Original GWAS inputs, not MTAG results
+LAVA_reference	EUR and the predefined locus file in support_data	main_analysis/33_lava/	LAVA reference and locus files
+Single_cell	BPH files from GSE181294	single_cell/bph/GSM5252137_RAW/	Use the sample names defined in script 01
+Single_cell	PCa files from GSE172301	single_cell/pca/	Use the sample names defined in script 01
+Merge_back_input	scRNA_harmony_annotated.rds, the epithelial subcluster object, and Fibroblast_*_final.rds	single_cell/bph/ and single_cell/pca/	Inputs for 06_merge_subclusters.R; original objects are read-only
+scDRS_input	counts_raw.mtx, genes.csv, cells.csv, and metadata.csv	scrna/scdrs/bph/ and scrna/scdrs/pca/	Final single-cell matrix and cell annotations; script 01 converts them to scdata.h5ad
+Open4Gene_input	result/Open4Gene_input.Rdata	main_analysis/35_open4gene/	Existing RNA, ATAC, and Peak2Gene.Pairs analysis inputs
+Table1	gencode.v44.annotation.gtf.gz	main_analysis/36_table1_colocalization/	GRCh38 gene coordinates; the script can download this file if missing
+Scoring_input	BPH_PSA_genes.xlsx and PCa_PSA_genes.xlsx	scoring/	PLACO-MAGMA web outputs; the continuous-PSA version also accepts PCA_PSA naming

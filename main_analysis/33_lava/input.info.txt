@@ -1,0 +1,4 @@
+phenotype	cases	controls	filename
+PSA	54381	347072	./formatted/PSA.txt
+BPH	41137	153573	./formatted/BPH.txt
+PC	9132	173493	./formatted/PC.txt
