@@ -13,7 +13,7 @@ The main analysis, continuous-PSA sensitivity analysis, and threshold sensitivit
 ## 2. Input GWAS datasets
 
 | Analysis | Trait | Dataset | Sample size |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Main | BPH | FinnGen R10, binary | 41,137 cases and 153,573 controls; N=194,710 |
 | Main | PCa | IEU OpenGWAS `ieu-b-4809`, binary | 9,132 cases and 173,493 controls; N=182,625 |
 | Main | Elevated PSA | GWAS Catalog `GCST90476277`, binary | 54,381 cases and 347,072 controls; N=401,453 |
@@ -34,13 +34,13 @@ The main analysis, continuous-PSA sensitivity analysis, and threshold sensitivit
 
 ## 4. Key analysis settings
 
-GWAS and QTL datasets were harmonized using variant identifiers and effect/other alleles according to the input requirements of each analysis. The genome-build requirements and reference resources for individual analyses are specified in `PARAMETERS.md` and the corresponding scripts.
+GWAS and QTL datasets were harmonized using GRCh38 chromosome, position, and allele identifiers. Effect/other allele orientation was harmonized according to the input requirements of each analysis. GWAS Z scores were calculated as `beta / se`, and QTL Z scores were calculated as `slope / slope_se`. The genome-build requirements and reference resources for individual analyses are specified in `PARAMETERS.md` and the corresponding scripts.
 
 The 1000 Genomes European reference panel was used for eCAVIAR, fastENLOC, and conditional analyses. Additional analysis-specific linkage disequilibrium references are listed in `INPUT_MANIFEST.tsv`.
 
 Colocalization analyses used a ±50-kb window around each lead SNP. The eCAVIAR settings were `causal = 2`, `rho_prob = 0.95`, and `f = 1`. Default priors were used for fastENLOC.
 
-The primary gene-prioritization thresholds were CLPP ≥ 0.01 and RCP ≥ 0.10. The threshold sensitivity analysis used CLPP ≥ 0.05 and RCP ≥ 0.50, representing relaxation of the CLPP threshold and tightening of the RCP threshold rather than a uniform relaxation.
+The primary gene-prioritization thresholds were CLPP ≥ 0.01 and RCP ≥ 0.10. The threshold sensitivity analysis used CLPP ≥ 0.05 and RCP ≥ 0.50, representing tightening of both thresholds.
 
 ## 5. Run order
 
@@ -48,15 +48,15 @@ Set the R working directory to the directory containing the script. Complete eac
 
 ### 5.1 Main analysis
 
-1. `01_preprocess_gwas -&gt; 02_harmonize_gwas`: format and quality-control the original GWAS files.
-2. `03_qtl_enrich_eqtl / 04_qtl_enrich_sqtl -&gt; 05_plot_qtl_enrich_eqtl / 06_plot_qtl_enrich_sqtl`: QTL enrichment and QQ plots.
-3. `07_fuma_gwas -&gt; 08_prepare_ecaviar -&gt; 09_run_ecaviar -&gt; 10_process_ecaviar`: FUMA locus processing and eCAVIAR.
-4. `11_prepare_fastenloc -&gt; 12_run_fastenloc -&gt; 13_process_fastenloc`: fastENLOC.
-5. `14_gene_enrich -&gt; 15_process_gene_enrich -&gt; 16_summarize_coloc`: GeneEnrich and colocalization summaries.
+1. `01_preprocess_gwas -> 02_harmonize_gwas`: format and quality-control the original GWAS files.
+2. `03_qtl_enrich_eqtl / 04_qtl_enrich_sqtl -> 05_plot_qtl_enrich_eqtl / 06_plot_qtl_enrich_sqtl`: QTL enrichment and QQ plots.
+3. `07_fuma_gwas -> 08_prepare_ecaviar -> 09_run_ecaviar -> 10_process_ecaviar`: FUMA locus processing and eCAVIAR.
+4. `11_prepare_fastenloc -> 12_run_fastenloc -> 13_process_fastenloc`: fastENLOC.
+5. `14_gene_enrich -> 15_process_gene_enrich -> 16_summarize_coloc`: GeneEnrich and colocalization summaries.
 6. `17_prepare_coloc_plot` through `28_run_gsmap`: colocalization plots, xQTLbiolinks, HyPrColoc, ECLIPSER, COJO, and gsMap, as required by the manuscript analyses.
 7. `29_ldsc` and `30_hdl`: genetic correlation analyses, which can be run independently after step 02.
-8. `31_placo -&gt; 32_prepare_placo_fuma`: PLACO and FUMA submission files.
-9. `33_lava/01_format_lava_input.R -&gt; 33_lava/02_run_lava_pairs.R`: local genetic correlations for PSA-BPH and PSA-PCa.
+8. `31_placo -> 32_prepare_placo_fuma`: PLACO and FUMA submission files.
+9. `33_lava/01_format_lava_input.R -> 33_lava/02_run_lava_pairs.R`: local genetic correlations for PSA-BPH and PSA-PCa.
 10. `34_placo_gene_figure`: integrate Figure 5 after the final outputs of steps 31, 32, and 33 are available.
 11. `35_open4gene`: Open4Gene analysis.
 12. `36_table1_colocalization`: generate Table 1 after steps 10 and 13; use colocalization results only and do not read MR objects.
@@ -79,11 +79,15 @@ The main trait-pair names are `BPH_PSA` and `PCa_PSA`. The continuous-PSA names 
 
 Run one of the following entry scripts in `scoring/`:
 
-- `01_score_binary_psa.R`: main score with CLPP ≥ 0.01, RCP ≥ 0.10, scDRS top 1000, and Total ≥ 7 in either trait pair.
+- `01_score_binary_psa.R`: main score with CLPP ≥ 0.01, RCP ≥ 0.10, and scDRS top 1000.
 - `02_score_continuous_psa.R`: continuous-PSA sensitivity analysis using the same scoring rules.
-- `03_score_threshold_sensitivity.R`: mixed threshold sensitivity analysis with CLPP ≥ 0.05 and RCP ≥ 0.50.
+- `03_score_threshold_sensitivity.R`: threshold sensitivity analysis with CLPP ≥ 0.05 and RCP ≥ 0.50.
 
 The score directly reads the final outputs of main-analysis steps 10, 13, and 35 and the scDRS results. Continuous-PSA scoring reads sensitivity-analysis steps 08 and 11. Place the PLACO-MAGMA web outputs in `scoring/` as specified in the input manifest.
+
+Within each trait pair, candidate genes are selected by ranking rather than by a statistical-significance cutoff. Among genes with a tissue/cell evidence score (`T_score`) of at least 2, the genes with the maximum total score are selected for the main-text candidate set. The union of the selected genes from the two trait pairs contains 13 genes in the current main analysis. The `Table2_Main_Text.csv` display rule of total score ≥7 is equivalent to this maximum-score selection in the current main result; 7 is not interpreted as a statistical-significance or causality threshold.
+
+The complete score distributions are retained so that score and rank changes can be examined under the strict-colocalization and continuous-PSA analyses without redefining the main candidate set post hoc.
 
 ## 6. Gene prioritization and terminology
 
@@ -98,18 +102,21 @@ Eight evidence components are equally weighted, with one point assigned to each 
 7. Prostate-tissue colocalization evidence for the second trait.
 8. scDRS evidence for the corresponding trait pair.
 
-The total score therefore ranges from 0 to 8. The `cross` label and associated output columns refer specifically to non-prostate tissues.
+The total score therefore ranges from 0 to 8. The `cross` label and associated output columns refer specifically to non-prostate tissues. Prostate-tissue evidence is scored separately.
 
-“Shared candidate effector genes” is used as an umbrella term for genes included in the multilayer evidence evaluation of the BPH-PSA or PCa-PSA trait pair to assess their potential involvement in shared genetic regulation.
+The scoring pool summarizes genes represented in the colocalization, Open4Gene, PLACO-MAGMA, and scDRS inputs. PLACO-MAGMA is used to describe pleiotropic genes and construct the scDRS input; it does not contribute points to the eight-component score. FUMA is used for locus definition and is not scored.
 
-“High-priority candidate genes” refer to the subset that meets the prespecified prioritization threshold. A gene is defined as high-priority when its total score is ≥7 in at least one of the two trait pairs.
+“Shared candidate effector genes” is an umbrella term for genes included in the multilayer evidence evaluation of the BPH-PSA or PCa-PSA trait pair. It denotes eligibility for statistical prioritization, not an experimentally established effector gene.
 
-These terms distinguish the broader candidate set from the statistically prioritized subset. The total score represents descriptive statistical prioritization, not an effect size or experimental evidence of causality.
+“Main-text prioritized genes” refers to the genes selected by the within-pair maximum-total-score rule described above. Where the manuscript uses “high-confidence genes” or “statistical-priority genes,” these labels refer only to this main-text display set. They do not denote a statistical confidence probability, independent clinical replication, or experimental proof of causality.
+
+The total score is used for descriptive ranking. It is not an effect size, a statistical-significance measure, or a causal probability. eCAVIAR and fastENLOC use the same GWAS and QTL inputs, prostate-tissue evidence is a subset of the cross-tissue evidence, and scDRS is related to the upstream PLACO-MAGMA input. The eight components therefore must not be interpreted as eight independent statistical validations.
 
 ## 7. Interpretation boundaries
 
 - Single-cell expression anchoring is descriptive. Large numbers of cells from the same patient are not treated as independent biological replicates for P-value calculation.
-- The Hu adult normal prostate atlas is used only to assess whether expression distributions are similar in the corresponding cellular compartments; the highest-expressing cell type does not redefine the original localization.
+- The Hu healthy adult prostate atlas retains its 16 fine-grained cell-type annotations. It is used only to assess whether expression distributions are similar in the corresponding cellular compartments; the highest-expressing cell type does not redefine the original localization.
+- Continuous-PSA analysis compares score and rank stability. It is not disease-stratified analysis or independent clinical validation.
 - Colocalization, priority scores, and expression anchoring do not establish experimentally confirmed causal genes.
 
 ## 8. Version reporting
